@@ -16,3 +16,8 @@ input_data = (map(ord, input_string) + PAD * input_PAD_size) * batch_size # Chan
 target_data = (GO + map(ord, target_string) + PAD * target_PAD_size) * batch_size # Change target phrase to list of ASCII codes.
 target_weights= ([1.0]*12 + [0.0]*0) * batch_size  # The number of actual valid (loss counted) number of characters 
                                                     # excluding PAD in the target sentence.
+
+## Set up the architecture
+class Seq2Seq(object):
+    def __init__(self, source_vocab_size, target_vocab_size, buckets, size, num_layers, batch_size):
+        self.
