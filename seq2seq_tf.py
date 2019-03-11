@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
 import ipdb
-ipdb.set_trace()
 
 vocab_size = 256      # of ASCII Code
 target_vocab_size = vocab_size  # the model selects (classify) one of 256 classes (ASCII codes) per time unit
@@ -13,10 +12,10 @@ batch_size=1
 input_string = "Hello World" 
 target_string = "How are you"
 
-input_PAD_size = buckets[0][0] - len(input_string)          # Decide how much PAD you want to input/
-target_PAD_size = buckets[0][0] - len(target_string) - 1    # Decide how much PAD you want to target.
+input_PAD_size = buckets[0][0] - len(input_string)          # Decide how much PAD you want to input/  [1]
+target_PAD_size = buckets[0][0] - len(target_string) - 1    # Decide how much PAD you want to target.  [0]
 input_data = (list(map(ord, input_string)) + PAD * input_PAD_size) * batch_size  # Change the input text to a list of ASCII codes.
-target_data = (GO + map(ord, target_string) + PAD * target_PAD_size) * batch_size  # Change target phrase to list of ASCII codes.
+target_data = (GO + list(map(ord, target_string)) + PAD * target_PAD_size) * batch_size  # Change target phrase to list of ASCII codes.
 target_weights = ([1.0]*12 + [0.0]*0) * batch_size           # The number of actual valid (loss counted) number of characters 
                                                             # excluding PAD in the target sentence.
 
@@ -59,10 +58,10 @@ class Seq2Seq(object):
         self.target_weights = []
 
         # Bucket size + one as decoder input node. (One additional creation is because
-        for i in range(buckets[-1][0]):
+        for i in range(buckets[-1][0]):      # 12
             self.encoder_inputs.append(tf.placeholder(tf.int32, shape=[None], name='encoder{0}'.format(i)))
 
-        for i in range(buckets[-1][1] + 1):
+        for i in range(buckets[-1][1] + 1):  # 13
             self.decoder_inputs.append(tf.placeholder(tf.int32, shape=[None], name='decoder{0}'.format(i)))
             self.target_weights.append(tf.placeholder(tf.float32, shape=[None], name='weights{0}'.format(i)))
 
@@ -120,6 +119,7 @@ class Seq2Seq(object):
 step=0
 test_step=1
 with tf.Session() as session:
+    ipdb.set_trace()
     model = Seq2Seq(vocab_size, target_vocab_size, buckets, size=5, num_layers=1, batch_size=batch_size)
     session.run(tf.global_variables_initializer())
     while True:
