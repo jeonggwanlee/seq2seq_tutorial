@@ -25,7 +25,7 @@ class Seq2Seq(object):
             source_vocab_size,
             target_vocab_size,
             buckets,
-            size,
+            num_units,
             num_layers,
             batch_size):
         self.buckets = buckets
@@ -33,7 +33,7 @@ class Seq2Seq(object):
         self.source_vocab_size = source_vocab_size
         self.target_vocab_size = target_vocab_size
 
-        cell = single_cell = tf.nn.rnn_cell.GRUCell(size)
+        cell = single_cell = tf.nn.rnn_cell.GRUCell(num_units)
         if num_layers > 1:
             cell = tf.nn.rnn_cell.MultiRNNCell([single_cell] * num_layers)
 
@@ -41,15 +41,15 @@ class Seq2Seq(object):
         # encoder_inputs: A list of ASCII codes in the input sentence.
         # 
         # cell: RNN cell to use for seq2seq.
-        # num_encoder_symbols, num_decoder_symbols:
-        # embedding_size : 
+        # num_encoder_symbols, num_decoder_symbols: the number of symbols in the input sentence and target sentence
+        # embedding_size : Size to embed each ASCII code.
         # feed_previous : Inference (true for learning /false for Inference)
         def seq2seq_f(encoder_inputs, decoder_inputs, do_decode):
             return tf.contrib.legacy_seq2seq.embedding_attention_seq2seq(
                     encoder_inputs, decoder_inputs, cell,
                     num_encoder_symbols=source_vocab_size,
                     num_decoder_symbols=target_vocab_size,
-                    embedding_size=size,
+                    embedding_size=num_units,
                     feed_previous=do_decode)
 
         # computational graph
@@ -57,7 +57,8 @@ class Seq2Seq(object):
         self.decoder_inputs = []
         self.target_weights = []
 
-        # Bucket size + one as decoder input node. (One additional creation is because
+        # Bucket size + one as decoder input node.
+        # (One additional creation is because the target symbol is equivalent to the decoder input shifting one space)
         for i in range(buckets[-1][0]):      # 12
             self.encoder_inputs.append(tf.placeholder(tf.int32, shape=[None], name='encoder{0}'.format(i)))
 
@@ -110,8 +111,10 @@ class Seq2Seq(object):
 
         outputs = session.run(output_feed, input_feed)
         if not test:
+            ipdb.set_trace()
             return outputs[0], outputs[1] # loss
         else:
+            ipdb.set_trace()
             return outputs[0], outputs[1:] # loss, output
 
 
@@ -119,11 +122,11 @@ class Seq2Seq(object):
 step=0
 test_step=1
 with tf.Session() as session:
-    ipdb.set_trace()
-    model = Seq2Seq(vocab_size, target_vocab_size, buckets, size=5, num_layers=1, batch_size=batch_size)
+    model = Seq2Seq(vocab_size, target_vocab_size, buckets, num_units=5, num_layers=1, batch_size=batch_size)
     session.run(tf.global_variables_initializer())
     while True:
         model.step(session, input_data, target_data, target_weights, test=False)
+        ipdb.set_trace()
         #if step % test_step == 0:
         #    test()
         step=step+1
